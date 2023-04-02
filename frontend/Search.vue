@@ -1,36 +1,25 @@
 <template>
     <v-container grid-list-md fluid px-2 py-1 class="search-component">
         <v-layout wrap>
-            <v-flex xs12 md8>
+            <v-flex xs12>
                 <panel class="query-panel d-flex fill-height" fill-height>
                     <template slot="header">
-                        Queries
+                        <template v-if="$APP == 'foldseek'">
+                            Input protein
+                            <template v-if="!$vuetify.breakpoint.smAndDown">
+                                structure (PDB) or sequence (FASTA)
+                            </template>
+                        </template>
+                        <template v-else>
+                            Queries
+                        </template>
                     </template>
                     <template slot="toolbar-extra">
-                        <v-tooltip open-delay="300" top>
-                            <template v-slot:activator="{ on }">
-                                <v-icon v-on="on">{{ $MDI.HelpCircleOutline }}</v-icon>
-                            </template>
-                            <span>{{ $STRINGS.QUERIES_HELP }}</span>
-                        </v-tooltip>
-                    </template>
-                    <template slot="content">
-                        <v-textarea
-                            :aria-label="$STRINGS.QUERIES_HELP"
-                            class="marv-bg mono"
-                            hide-details 
-                            v-model="query" 
-                            @dragover.prevent 
-                            @drop="fileDrop($event)" 
-                            :placeholder="$STRINGS.QUERIES_HELP"
-                            spellcheck="false">
-                        </v-textarea>
-
-                        <div class="actions">
                         <v-dialog v-if="!$ELECTRON" v-model="showCurl" absolute :disabled="searchDisabled">
                             <template v-slot:activator="{ on }">
-                                <v-btn v-on="on" :disabled="searchDisabled">
-                                    cURL Command
+                                <v-btn v-on="on" plain :disabled="searchDisabled">
+                                    <v-icon>M 22.23 1.96 c -0.98 0 -1.77 0.8 -1.77 1.77 c 0 0.21 0.05 0.4 0.12 0.6 l -8.31 14.23 c -0.8 0.17 -1.42 0.85 -1.42 1.7 a 1.77 1.77 0 0 0 3.54 0 c 0 -0.2 -0.05 -0.37 -0.1 -0.55 l 8.34 -14.29 a 1.75 1.75 0 0 0 1.37 -1.69 c 0 -0.97 -0.8 -1.77 -1.77 -1.77 M 14.98 1.96 c -0.98 0 -1.77 0.8 -1.77 1.77 c 0 0.21 0.05 0.4 0.12 0.6 l -8.3 14.24 c -0.81 0.16 -1.43 0.84 -1.43 1.7 a 1.77 1.77 0 0 0 3.55 0 c 0 -0.2 -0.06 -0.38 -0.12 -0.56 L 15.4 5.42 a 1.75 1.75 0 0 0 1.37 -1.69 c 0 -0.97 -0.8 -1.77 -1.78 -1.77 M 1.75 6 a 1.75 1.75 0 1 0 0 3.5 a 1.75 1.75 0 0 0 0 -3.5 z m 0 6 a 1.75 1.75 0 1 0 0 3.5 a 1.75 1.75 0 0 0 0 -3.5 z</v-icon>
+                                    API
                                 </v-btn>
                             </template>
                             <v-card>
@@ -50,18 +39,48 @@
                                 </v-card-actions>
                             </v-card>
                         </v-dialog>
+                        <v-tooltip open-delay="300" top>
+                            <template v-slot:activator="{ on }">
+                                <v-icon v-on="on">{{ $MDI.HelpCircleOutline }}</v-icon>
+                            </template>
+                            <span>{{ $STRINGS.QUERIES_HELP }}</span>
+                        </v-tooltip>
+                    </template>
+                    <template slot="content">
+                        <v-textarea
+                            :aria-label="$STRINGS.QUERIES_HELP"
+                            class="marv-bg mono"
+                            hide-details
+                            v-model="query"
+                            @dragover.prevent
+                            @drop="fileDrop($event)"
+                            :placeholder="$STRINGS.QUERIES_HELP"
+                            spellcheck="false"
+                            data-gramm="false"
+                            data-gramm_editor="false"
+                            data-enable-grammarly="false"
+                            >
+                        </v-textarea>
 
-                        <load-acession-button v-if="$APP == 'foldseek'" v-on:select="query = $event"></load-acession-button>
-
-                        <file-button id="file" :label="$STRINGS.UPLOAD_LABEL" v-on:upload="upload"></file-button>
-
-                        <PredictStructureButton v-if="$APP == 'foldseek'" :query="query" v-model="predictable" v-on:predict="query = $event"></PredictStructureButton>
+                        <div class="actions">
+                            <load-acession-button v-if="$APP == 'foldseek'" v-on:select="query = $event" :preload-source="preloadSource" :preload-accession="preloadAccession"></load-acession-button>
+                            <file-button id="file" :label="$STRINGS.UPLOAD_LABEL" v-on:upload="upload"></file-button>
+                            <PredictStructureButton v-if="$APP == 'foldseek'" :query="query" v-model="predictable" v-on:predict="query = $event"></PredictStructureButton>
                         </div>
                     </template>
                 </panel>
             </v-flex>
-            <v-flex xs12 md4>
-                <panel header="Search Settings">
+            <v-flex xs12>
+                <panel collapsible collapsed>
+                    <template slot="header">
+                        <template v-if="!$vuetify.breakpoint.smAndDown">
+                            Databases
+                        </template>
+                        <template v-else>
+                            DBs
+                        </template>
+                        &amp; search settings
+                    </template>
                     <div slot="content">
                         <div class="input-group">
                             <v-tooltip open-delay="300" top>
@@ -116,12 +135,41 @@
                             <span>Send an email when the job is done.</span>
                         </v-tooltip>
 
-                        <v-btn color="primary" block large v-on:click="search" :disabled="searchDisabled"><v-icon>{{ $MDI.Magnify }}</v-icon>Search</v-btn>
 
                         <div v-if="errorMessage != ''" class="v-alert red mt-2">
                             <span>{{ errorMessage }}</span>
                         </div>
                     </div>
+                </panel>
+            </v-flex>
+            <v-flex>
+                <panel>
+                <template slot="content">
+                    <div class="actions" :style="!$vuetify.breakpoint.xsOnly ?'display:flex; align-items: center;' : null">
+                    <v-btn color="primary" :block="$vuetify.breakpoint.xsOnly" x-large v-on:click="search" :disabled="searchDisabled"><v-icon>{{ $MDI.Magnify }}</v-icon>&nbsp;Search</v-btn>
+                    <div :style="!$vuetify.breakpoint.xsOnly ? 'margin-left: 1em;' : 'margin-top: 1em;'">
+                        <span><strong>Summary</strong></span><br>
+                        Search <template v-if="taxFilter">
+                            <strong>{{ taxFilter.text }}</strong> in
+                        </template>
+                        <template v-if="database.length == databases.length">
+                            <strong>all available</strong> databases
+                        </template>
+                        <template v-else>
+                            <strong>{{ database.length }}</strong>
+                            <template v-if="database.length == 1">
+                                database
+                            </template>
+                            <template v-else>
+                                databases
+                            </template>
+                            ({{
+                                databases.filter(db => database.includes(db.path)).map(db => db.name).sort().join(", ")
+                            }})
+                        </template> with {{ $STRINGS.APP_NAME }} in <strong>{{ modes[mode] }}</strong> mode.
+                    </div>
+                    </div>
+                </template>
                 </panel>
             </v-flex>
         </v-layout>
@@ -173,9 +221,11 @@ export default {
             errorMessage: "",
             showCurl: false,
             mode: this.$STRINGS.MODE_DEFAULT_KEY,
+            modes: Array.from({length: this.$STRINGS.MODE_COUNT - 0}, (_, i) => i + 1)
+                        .reduce((dict, i, _)  => { dict[this.$STRINGS['MODE_KEY_' + i]] = this.$STRINGS['MODE_TITLE_' + i]; return dict; }, {}),
             email: "",
             hideEmail: true,
-            query: this.$STRINGS.QUERY_DEFAULT,
+            query: "",
             database: [],
             taxFilter: null,
             predictable: false
@@ -188,8 +238,12 @@ export default {
         if (localStorageEnabled && localStorage.email) {
             this.email = localStorage.email;
         }
-        if (localStorageEnabled && localStorage.query) {
+        if (this.preloadAccession.length > 0) {
+            this.query = "";
+        } else if (localStorageEnabled && localStorage.query && localStorage.query.length > 0) {
             this.query = localStorage.query;
+        } else {
+            this.query = this.$STRINGS.QUERY_DEFAULT;
         }
         if (localStorageEnabled && localStorage.database) {
             this.database = JSON.parse(localStorage.database);
@@ -215,6 +269,12 @@ export default {
                     this.inSearch || this.database.length == 0 || this.databases.length == 0 || this.query.length == 0
                 );
             }
+        },
+        preloadSource() {
+            return this.$route.query.source || "";
+        },
+        preloadAccession() {
+            return this.$route.query.accession || "";
         }
     },
     created() {
@@ -270,15 +330,16 @@ export default {
                     this.dberror = false;
                     this.databases = data.databases;
 
+                    const complete = this.databases.filter((db) => { return db.status == "COMPLETE"; });
                     if (this.database === null || this.database.length == 0) {
-                        this.database = this.databases.filter((element) => { return element.default == true });
+                        this.database = complete.filter((element) => { return element.default == true }).map((db) => { return db.path; });
                     } else {
-                        const paths = this.databases.map((db) => { return db.path; });
+                        const paths = complete.map((db) => { return db.path; });
                         this.database = this.database.filter((elem) => {
                             return paths.includes(elem);
                         });
                     }
-                    this.database = this.databases.filter((db) => { return db.status == "COMPLETE"; }).map(db => db.path);
+
                     if (this.databases.some((db) => { return db.status == "PENDING" || db.status == "RUNNING"; })) {
                         setTimeout(this.fetchData.bind(this), 1000);
                     }

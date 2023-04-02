@@ -2,6 +2,7 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import Vuetify from 'vuetify/lib';
 import { create } from 'axios';
+import Portal from './lib/vue-simple-portal';
 
 import {
     mdiHistory,
@@ -28,10 +29,13 @@ import {
     mdiArrowRightCircleOutline,
     mdiCircle,
     mdiCircleHalf,
+    mdiPlusBox,
+    mdiMinusBox,
 } from '@mdi/js'
 
 Vue.use(VueRouter);
 Vue.use(Vuetify);
+Vue.use(Portal);
 
 import App from './App.vue';
 import Search from './Search.vue';
@@ -105,6 +109,8 @@ Vue.use({
             ArrowRightCircleOutline: mdiArrowRightCircleOutline,
             Circle: mdiCircle,
             CircleHalf: mdiCircleHalf,
+            PlusBox: mdiPlusBox,
+            MinusBox: mdiMinusBox,
         };
         if (__ELECTRON__) {
             const remote = require('@electron/remote');

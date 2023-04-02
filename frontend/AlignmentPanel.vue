@@ -72,12 +72,22 @@ export default {
     flex-direction: row;
     flex-wrap: nowrap;
     justify-content: center;
-    align-items: center;
+    align-items: stretch;
+    width: 100%;
+}
+.alignment-wrapper-inner {
+    flex: 2;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: end;
 }
 
 .alignment-structure-wrapper {
+    flex: 1;
     min-width:450px;
-    min-height:300px;
+    margin: 0;
+    margin-bottom: auto;
 }
 
 @media screen and (max-width: 960px) {
